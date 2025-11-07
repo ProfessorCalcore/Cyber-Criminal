@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calcore</title>
+<style>
+  body {
+    background: black;
+    color: white;
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  button {
+    margin: 5px;
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  #stats {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    text-align: right;
+  }
+  #investments-info {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+  }
+</style>
+</head>
+<body>
+
+<h1 id="money">£0.00</h1>
+
+<button id="cash-btn">Hack the Bank</button>
+
+<button id="upgrade1">Hacking Strength<br>Cost: £16</button>
+<button id="upgrade2">CPS<br>Cost: £12</button>
+<button id="upgrade3">Speed<br>Cost: £8</button>
+<button id="upgrade4">Invest £1000</button>
+<button id="upgrade5">Increase Interest Rate = £2500</button>
+<button id="withdraw-btn">Withdraw All</button>
+
+<div id="stats">
+  <div id="cps">CPS: £0</div>
+  <div id="tap-power">Hacking Strength: £1 /Tap</div>
+  <div id="ms-label">CPS Interval: 1 seconds</div>
+  <div id="upgrade1-level">Hacking Level: LVL 1</div>
+</div>
+
+<div id="investments-info">
+  <div id="investment-label">Investments: £0</div>
+  <div id="interest-label">Interest = 0.10%</div>
+</div>
+
+<script>
+let money = 0;
+let factor = 1;
+let factor2 = factor * 2;
+
+let investments = 0;
+let interest_rate = 0.001;
+
+let upgrade1_level = 1;
+let upgrade2_level = 1;
+let upgrade3_level = 1;
+
+let upgrade_cost = 16;
+let upgrade2_cost = 12;
+let upgrade3_cost = 8;
+
+let cash_per_sec = 0;
+let milliseconds = 1000;
+
+let interest_upgrade = upgrade1_level * 2500;
+let upgrade_factor = upgrade1_level * upgrade1_level * 25;
+
+const moneyEl = document.getElementById('money');
+const cashBtn = document.getElementById('cash-btn');
+const upgrade1Btn = document.getElementById('upgrade1');
+const upgrade2Btn = document.getElementById('upgrade2');
+const upgrade3Btn = document.getElementById('upgrade3');
+const upgrade4Btn = document.getElementById('upgrade4');
+const upgrade5Btn = document.getElementById('upgrade5');
+const withdrawBtn = document.getElementById('withdraw-btn');
+const cpsEl = document.getElementById('cps');
+const tapPowerEl = document.getElementById('tap-power');
+const msLabelEl = document.getElementById('ms-label');
+const upgrade1LevelEl = document.getElementById('upgrade1-level');
+const investmentLabelEl = document.getElementById('investment-label');
+const interestLabelEl = document.getElementById('interest-label');
+
+// Helper to format money
+function formatMoney(amount) {
+    return '£' + amount.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+//■■■■■■■ FUNCTIONS ■■■■■■■//
+
+function addMoney() {
+    let random_number = Math.floor(Math.random() * 500) + 1;
+    cashBtn.style.backgroundColor = 'lime';
+    moneyEl.style.backgroundColor = 'lime';
+    setTimeout(() => {
+        cashBtn.style.backgroundColor = '';
+        moneyEl.style.backgroundColor = '';
+    }, 100);
+    
+    if(random_number === 100){
+        money *= upgrade1_level;
+        cashBtn.style.backgroundColor = 'orange';
+        moneyEl.style.backgroundColor = 'orange';
+        setTimeout(() => {
+            cashBtn.style.backgroundColor = '';
+            moneyEl.style.backgroundColor = '';
+        }, 1000);
+    } else {
+        money += 1 + factor;
+    }
+    moneyEl.textContent = formatMoney(money);
+}
+
+// Upgrade 1 - Tap Power
+function buyUpgrade1() {
+    if(money >= upgrade_cost){
+        money -= upgrade_cost;
+        upgrade1_level += 1;
+        factor += 10 * upgrade1_level + upgrade1_level + 6;
+        upgrade_cost += factor * 50;
+        upgrade1Btn.innerHTML = `Hacking Strength<br>Cost: ${formatMoney(upgrade_cost)}`;
+        upgrade1Btn.style.backgroundColor = 'cyan';
+        setTimeout(() => upgrade1Btn.style.backgroundColor = '', 200);
+        updateStats();
+    } else {
+        moneyEl.style.backgroundColor = 'red';
+        setTimeout(() => moneyEl.style.backgroundColor = '', 500);
+    }
+}
+
+// Upgrade 2 - CPS
+function buyUpgrade2() {
+    if(money >= upgrade2_cost){
+        money -= upgrade2_cost;
+        cash_per_sec += 30 * upgrade1_level;
+        upgrade2_cost += cash_per_sec * 20;
+        upgrade2Btn.innerHTML = `CPS<br>Cost: ${formatMoney(upgrade2_cost)}`;
+        upgrade2Btn.style.backgroundColor = 'cyan';
+        setTimeout(() => upgrade2Btn.style.backgroundColor = '', 200);
+        updateStats();
+    } else {
+        moneyEl.style.backgroundColor = 'red';
+        setTimeout(() => moneyEl.style.backgroundColor = '', 500);
+    }
+}
+
+// Upgrade 3 - Speed
+function buyUpgrade3() {
+    if(milliseconds >= 26 && money >= upgrade3_cost){
+        money -= upgrade3_cost;
+        milliseconds -= 50;
+        upgrade3_cost += upgrade1_level * 10000;
+        upgrade3Btn.innerHTML = `Speed<br>Cost: ${formatMoney(upgrade3_cost)}`;
+        upgrade3Btn.style.backgroundColor = 'cyan';
+        setTimeout(() => upgrade3Btn.style.backgroundColor = '', 200);
+        updateStats();
+    } else {
+        moneyEl.style.backgroundColor = 'red';
+        setTimeout(() => moneyEl.style.backgroundColor = '', 500);
+    }
+}
+
+// Upgrade 4 - Invest £1000
+function investCash() {
+    if(money >= 1000){
+        money -= 1000;
+        investments += 1000;
+        investmentLabelEl.textContent = `Investments: ${formatMoney(investments)}`;
+        moneyEl.textContent = formatMoney(money);
+    }
+}
+
+// Withdraw investments
+function withdrawInvestments() {
+    money += investments;
+    investments = 0;
+    investmentLabelEl.textContent = `Investments: ${formatMoney(investments)}`;
+    moneyEl.textContent = formatMoney(money);
+}
+
+// Interest
+function addInterest() {
+    let interest = investments * interest_rate;
+    investments += interest;
+    investmentLabelEl.textContent = `Investments: ${formatMoney(investments)}`;
+}
+
+function increaseInterest() {
+    interest_upgrade = upgrade1_level * 1000;
+    if(money >= interest_upgrade + 1000){
+        money -= interest_upgrade;
+        interest_rate += 0.0001;
+        interest_upgrade += 1000;
+        interestLabelEl.textContent = `Interest = ${(interest_rate*100).toFixed(2)}%`;
+        upgrade5Btn.innerHTML = `Increase Interest Rate = ${formatMoney(interest_upgrade)}`;
+        moneyEl.textContent = formatMoney(money);
+    } else {
+        moneyEl.style.backgroundColor = 'red';
+        setTimeout(() => moneyEl.style.backgroundColor = '', 1000);
+    }
+}
+
+//■■■■■■■ Update Stats ■■■■■■■//
+function updateStats() {
+    cpsEl.textContent = `CPS: ${ (cash_per_sec*1000/milliseconds).toFixed(2) } / sec`;
+    tapPowerEl.textContent = `Hacking Strength: £${factor} /Tap`;
+    msLabelEl.textContent = `CPS Interval: ${(milliseconds/1000).toFixed(2)} seconds`;
+    upgrade1LevelEl.textContent = `Hacking Level: LVL ${upgrade1_level}`;
+}
+
+//■■■■■■■ Event Listeners ■■■■■■■//
+cashBtn.addEventListener('click', addMoney);
+upgrade1Btn.addEventListener('click', buyUpgrade1);
+upgrade2Btn.addEventListener('click', buyUpgrade2);
+upgrade3Btn.addEventListener('click', buyUpgrade3);
+upgrade4Btn.addEventListener('click', investCash);
+upgrade5Btn.addEventListener('click', increaseInterest);
+withdrawBtn.addEventListener('click', withdrawInvestments);
+
+//■■■■■■■ Passive CPS ■■■■■■■//
+function passiveIncome() {
+    if(milliseconds >= 5){
+        money += cash_per_sec;
+        moneyEl.textContent = formatMoney(money);
+    } else {
+        cash_per_sec += 100;
+    }
+    setTimeout(passiveIncome, milliseconds);
+}
+
+//■■■■■■■ Interest Loop ■■■■■■■//
+setInterval(addInterest, 1000);
+
+//■■■■■■■ CPS Update Loop ■■■■■■■//
+setInterval(updateStats, 100);
+
+passiveIncome();
+</script>
+
+</body>
+</html>
